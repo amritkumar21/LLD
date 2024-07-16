@@ -14,6 +14,12 @@
     to the particular implementation
     we can use interface in this scenario as the class which needs to implement the 
     fly behaviour will only need to implement it.
+1.3 Issue with adding interface
+    If we need to change fly method a little we need to do it on all places where it is implemented
+    Since fly functiolanlity is will remain same for all duck it will create duplicacy of code
+
+1.4 Design Principle **** Strategy design patter (behavioural)****
+    Separate the whats stays the same with what varies
 
  */
 #include <iostream>
@@ -26,64 +32,110 @@ using namespace std;
   2. swim
   3. display (abstract)
 */
+
+class FlyBehaviour
+{
+    public:
+    virtual void fly() = 0;
+};
+
+class QuackBehaviour
+{
+    public:
+    virtual void quack() = 0;
+};
+
+class Quack:public QuackBehaviour
+{
+    void quack() override
+    {
+      cout<<"Quack";
+    }
+};
+
+class Squeak:public QuackBehaviour
+{
+    void quack() override
+    {
+      cout<<"Squeak";
+    }
+};
+
+class MuteQuack:public QuackBehaviour
+{
+    void quack() override
+    {
+      cout<<"MuteQuack";
+    }
+};
+
 class Duck
 {
     public: 
 
+    FlyBehaviour* flyBehaviour;
+    QuackBehaviour* quackBehaviour;
+
     void swim()
     {
         cout<<"Swim Swim";
+    }
+    void performQuack()
+    {
+        quackBehaviour->quack();
+    }
+    void performFly()
+    {
+        flyBehaviour->fly();
     }
 
     virtual void display() const = 0;
 
 };
 
-//Interface
-class Flyable
+class FlyWithWings:public FlyBehaviour
 {
-    virtual void fly() = 0;
-};
-
-class Quackable
-{   
-    virtual void quack() = 0;
-};
-
-class MallardDuck: public Duck, Flyable,Quackable
-{
-    void display() const override
-    {
-        cout<<"MallardDuck";
-    }
-
     void fly() override
     {
-        cout<<"mallardDuck";
-    }
-    void quack() override
-    {
-        cout <<"quack quack";
+      cout<<"fly with wings";
     }
 };
 
-class RedHeadDuck: public Duck,Flyable,Quackable
+class FlyNoWay:public FlyBehaviour
+{
+    void fly() override
+    {
+      cout<<"fly no way";
+    }
+};
+
+
+
+class MallardDuck: public Duck
+{
+   public:
+   MallardDuck()
+   {
+     quackBehaviour = new Quack();
+     flyBehaviour = new FlyWithWings();
+   }
+
+   void display() const override
+   {
+    cout<<"MallardDuck";
+   }
+
+};
+
+class RedHeadDuck: public Duck
 {
     void display() const override
     {
         cout<<"RedHeadDuck";
     }
-    void fly() override
-    {
-        cout<<"RedHeadDuck";
-    }
-    void quack() override
-    {
-        cout <<"quack quack";
-    }
 };
 
-class RubberDuck: public Duck,Flyable,Quackable
+class RubberDuck: public Duck
 {
 
     public: 
@@ -91,25 +143,15 @@ class RubberDuck: public Duck,Flyable,Quackable
     {
         cout<<"RubberDuck";
     }
-
-    void quack () override
-    {
-        cout<<"Squeak Squeak";
-    }
-    void fly() override
-    {
-        cout<<"Squeak Squeak";
-    }
 };
 
 
 int main()
 {
-  RubberDuck rduck;
-  RedHeadDuck redDuck;
+
   MallardDuck mduck;
-  rduck.swim();
-  rduck.display();
-  rduck.quack();
+  mduck.performFly();
+  mduck.performQuack();
+  mduck.display();
   return 0;
 }
