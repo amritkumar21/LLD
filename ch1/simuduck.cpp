@@ -20,6 +20,14 @@
 
 1.4 Design Principle **** Strategy design patter (behavioural)****
     Separate the whats stays the same with what varies
+1.5 OO principles 
+    Favour composition over inheritance
+    Encapsulates what veries
+    Program to interaces not implementation
+1.6 Stratgey pattern
+    It defines a family of algorithms
+    encapsualtes each one and make them interchangable.
+    It lets the algorithm varies independently from the client that use it
 
  */
 #include <iostream>
@@ -88,7 +96,14 @@ class Duck
     {
         flyBehaviour->fly();
     }
-
+    void setFlyBehaviour(FlyBehaviour* fb)
+    {
+       flyBehaviour = fb;
+    }
+    void setQuackBehaviour(QuackBehaviour* qb)
+    {
+        quackBehaviour = qb;
+    }
     virtual void display() const = 0;
 
 };
@@ -145,6 +160,20 @@ class RubberDuck: public Duck
     }
 };
 
+class Modelduck: public Duck
+{
+   public:
+   Modelduck()
+   {
+     quackBehaviour = new Quack();
+     flyBehaviour = new FlyNoWay();
+   }
+
+   void display() const override
+   {
+    cout<<"Modelduck";
+   }   
+};
 
 int main()
 {
@@ -153,5 +182,18 @@ int main()
   mduck.performFly();
   mduck.performQuack();
   mduck.display();
+  cout<<"\n";
+
+  Modelduck moduck;
+  moduck.performFly();
+  moduck.performQuack();
+  cout<<"\n";
+
+  moduck.setQuackBehaviour(new Squeak());
+  moduck.setFlyBehaviour(new FlyWithWings());
+  moduck.performFly();
+  moduck.performQuack();
+
+
   return 0;
 }
