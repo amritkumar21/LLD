@@ -2,84 +2,98 @@
 #include<memory>
 using namespace std;
 
-class Platform
+//Implementation
+class DeliveryChannel
 {
     public:
-        virtual string selectPlatform() = 0;
-        virtual ~Platform() = default;
+        virtual void sendMessage(string msg) = 0;
+        virtual ~DeliveryChannel() = default;
 };
 
-class Windows: public Platform
-{
-    public:
-        string selectPlatform()
-        {
-            return "Windows";
-        }
-};
-
-class Mac: public Platform
-{
-    public:
-        string selectPlatform()
-        {
-            return "Mac";
-        }
-};
-
-class Linux: public Platform
-{
-    public:
-        string selectPlatform()
-        {
-            return "Linux";
-        }
-};
-
-class Player
+//Abstraction
+class Notification
 {
     protected:
-        unique_ptr<Platform> p;
+        shared_ptr<DeliveryChannel> channel;
     public:
-        Player(unique_ptr<Platform> player):p(std::move(player)){}
-        virtual void createPlayer() = 0;
-        virtual ~Player() = default;
+        Notification(shared_ptr<DeliveryChannel> channel)
+        {
+            this->channel = channel;
+        }
+        virtual void sendNotification(string msg) = 0;
+        virtual ~Notification() = default;
 };
 
-class MP4: public Player
+class BasicNotification: public Notification
 {
     public:
-        MP4(unique_ptr<Platform> player):Player(std::move(player)){}
-        void createPlayer() override
+        BasicNotification(shared_ptr<DeliveryChannel> channel):Notification(channel) {}
+        virtual void sendNotification(string msg) override
         {
-            cout<<"MP4"<<p->selectPlatform()<<"player"<<endl;
+           cout<<"Send Basic notification"<<endl;
+           channel->sendMessage(msg);
         }
 };
 
-class AVI: public Player
+class UrgentNotification: public Notification
 {
     public:
-        AVI(unique_ptr<Platform> player):Player(std::move(player)){}
-        void createPlayer() override
+        UrgentNotification(shared_ptr<DeliveryChannel> channel):Notification(channel) {}
+        virtual void sendNotification(string msg) override
         {
-            cout<<"AVI"<<p->selectPlatform()<<"player"<<endl;
+           cout<<"Send Urgent notification"<<endl;
+           channel->sendMessage(msg);
         }
 };
 
-class MKV: public Player
+class ScheduledNotification: public Notification
 {
     public:
-       MKV(unique_ptr<Platform> player):Player(std::move(player)){}
-        void createPlayer() override
+        ScheduledNotification(shared_ptr<DeliveryChannel> channel):Notification(channel) {}
+        virtual void sendNotification(string msg) override
         {
-            cout<<"MKV"<<p->selectPlatform()<<"player"<<endl;
+           cout<<"Send Scheduled notification"<<endl;
+           channel->sendMessage(msg);
+        }
+};
+
+class Email:public DeliveryChannel
+{
+    public:
+        void sendMessage(string msg) override
+        {
+            cout<<"Msg sent via email : "<<msg<<endl;
+        }
+};
+
+class SMS:public DeliveryChannel
+{
+    public:
+        void sendMessage(string msg) override
+        {
+            cout<<"Msg sent via sms : "<<msg<<endl;
+        }
+};
+
+
+class Push:public DeliveryChannel
+{
+    public:
+        void sendMessage(string msg) override
+        {
+            cout<<"Msg sent via push notification : "<<msg<<endl;
         }
 };
 
 int main()
 {
-    unique_ptr<Player> p = make_unique<MP4>(make_unique<Windows>());
-    p->createPlayer();
+    shared_ptr<DeliveryChannel> sms = make_shared<SMS>();
+    shared_ptr<DeliveryChannel> email = make_shared<Email>();
+
+    unique_ptr<Notification> basic = make_unique<BasicNotification>(sms);
+    unique_ptr<Notification> urgent = make_unique<UrgentNotification>(email);
+
+    basic->sendNotification("Hello how are you");
+    urgent->sendNotification("PC crashed");
 
 }
-
